@@ -5,7 +5,8 @@ const NORMAL_COLOR = '#009b90';
 const STROKE_COLOR = '#717073';
 
 /**
- * Creates a pentagon at the given id with
+ * Creates a pentagon at the given id. Various aspects of the pentagon can be
+ * manipulated.
  * @param  {int} x  [width of pentagon]
  * @param  {int} y  [height of pentagon]
  * @param  {string} id [id of SVG element to place pentagon]
@@ -17,11 +18,9 @@ const STROKE_COLOR = '#717073';
 function generatePentagon (x, y, id, numLevels=0, scaleX=1, scaleY=1, hashPoints) {
   let $svg = $(id);
 
-  //Calculates the points of the pentagon with
+  // 1. Calculates the points of the pentagon with the given parameters
+  // Points follow clockwise around the pentagon, starting from the top most point
   function genPentagonPoints(ptX=x, ptY=y, offSetX=0, offSetY=0){
-    // 2. Points follow clockwise around the pentagon,
-    // starting from the top most point
-
     let points = [[ptX/2, 0+offSetY], //Top most point
                   [ptX-offSetX, (ptY+offSetY/2)/2.5],
                   [((3*ptX)/4)-(offSetX/2), ptY-offSetY],
@@ -36,21 +35,21 @@ function generatePentagon (x, y, id, numLevels=0, scaleX=1, scaleY=1, hashPoints
 
   let points = genPentagonPoints();
 
-  //Calculate center
+  // Calculate center
   let center = [(x*scaleX)/2, (y*scaleY)/2];
 
-  //3. Set width and height of frame point on points
+  //2. Set width and height of frame point on points
   $("#J-svg-pentagon").attr({
     width: points[1][0], //points[1][0] is the right-most point
     height: points[2][1] //points[2][1] || points[3][1] is the bottom-most point
   });
 
-  //4. Generate the pentagon
+  //3. Generate the outer level of the pentagon
   $svg.find('.pentagon').attr('points', ptsToString(points))
 
-  // 5. Generate the individual shards shards pointsd on the {numShards}
-  // Each shard uses the previous two points to calculate its' own
-  // points.
+  // 4. Generate the individual shards (a shard is the trapezoidal polygon that
+  // gets highlighted) points based on the {numShards}. Each shard uses the
+  // previous two points to calculate its' own points.
   let shards = [];
 
   for(let i=1;i<=numLevels;i++){
@@ -76,7 +75,7 @@ function generatePentagon (x, y, id, numLevels=0, scaleX=1, scaleY=1, hashPoints
       shards.push(makeSVG('polygon', {
         class: "shard shard-" + j + i,
         fill: NORMAL_COLOR,
-        stroke: STROKE_COLOR,
+        stroke: STROKE_COLOR, //On even numbers the stroke should be lighter
         "stroke-dasharray": ((i+1) % 2 === 0) ? 0 : '4 4', // '4 4' indicates the spacing between lines in '0.5' row
         "stroke-width": ((i+1) % 2 === 0) ? 1 : 2, //0.4 + (numLevels - (i))*0.3, //mx+c => m = rate of change of thickness; c = starting thickness
         points: ptsToString(pointSet)
@@ -86,7 +85,7 @@ function generatePentagon (x, y, id, numLevels=0, scaleX=1, scaleY=1, hashPoints
   }
 
   /**
-   * Updates the background color of a shard and cascades to lower shards
+   * Updates the background color of a shard and cascades to shards below it
    * @param  {[int, int]} points [description]
    * @param  {String} color  [description]
    * @return {[type]}        [description]
@@ -127,6 +126,7 @@ function generatePentagon (x, y, id, numLevels=0, scaleX=1, scaleY=1, hashPoints
     setCoords(shard_id);
   }
 
+  // 5. Adds the above functionality to each shard
   $svg.append(shards);
   $('.shard').hover(onEnter, onLeave); // Adds hover effect
   $('.shard').click(onClick); // Locks in the shard colors
@@ -143,17 +143,20 @@ function generatePentagon (x, y, id, numLevels=0, scaleX=1, scaleY=1, hashPoints
   return points;
 }
 
-function generateText(points, id) {
-  const textPoints = [];
-
-  for(let i=0;i<points.length;i++){
-    let a = i,                       //First point
-        b = (i+1) % (points.length), //Second Point
-        pointSet = [points[a],points[b]],
-        mid = midPoint(pointSet);
-
-    textPoints.push(mid);
-  }
-
-  return textPoints;
-}
+/* Generate the points for the labels of Awareness, Creative, etc.
+    Depricated now since labels are now hard coded.
+*/
+// function generateText(points, id) {
+//   const textPoints = [];
+//
+//   for(let i=0;i<points.length;i++){
+//     let a = i,                       //First point
+//         b = (i+1) % (points.length), //Second Point
+//         pointSet = [points[a],points[b]],
+//         mid = midPoint(pointSet);
+//
+//     textPoints.push(mid);
+//   }
+//
+//   return textPoints;
+// }
